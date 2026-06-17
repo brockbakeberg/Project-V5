@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Zap, Clock, ChevronRight, Plus, Building2, Trash2 } from 'lucide-react';
+import { Zap, Clock, ChevronRight, Plus, Building2, Trash2, Loader2, Sparkles } from 'lucide-react';
 import ProspectSetup from './components/ProspectSetup';
 import ProductSelector from './components/ProductSelector';
 import MockupViewer from './components/MockupViewer';
 import { supabase } from './lib/supabase';
+import { analyzeCompany, type Research } from './lib/analyzeCompany';
 import type { Prospect, ProductCategory, AppStep } from './types';
 
 const DEFAULT_PROSPECT: Prospect = {
@@ -158,6 +159,20 @@ export default function App() {
   const [prospect, setProspect] = useState<Prospect>(DEFAULT_PROSPECT);
   const [category, setCategory] = useState<ProductCategory | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [research, setResearch] = useState<Research | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
+  // Research the prospect (free AI). Returns null on failure -> app falls back
+  // to its normal non-AI behavior, so this can never break the flow.
+  const runAnalysis = useCallback(async (p: Prospect) => {
+    setProspect(p);
+    setResearch(null);
+    setAnalyzing(true);
+    const r = await analyzeCompany(p);
+    setResearch(r);
+    setAnalyzing(false);
+    setStep('select');
+  }, []);
 
   const handleProspectComplete = useCallback(async (p: Prospect) => {
     let saved = p;
@@ -185,9 +200,8 @@ export default function App() {
       }).select().maybeSingle();
       if (data) saved = { ...p, id: (data as Prospect).id };
     }
-    setProspect(saved);
-    setStep('select');
-  }, []);
+    await runAnalysis(saved);
+  }, [runAnalysis]);
 
   const handleCategorySelect = useCallback((cat: ProductCategory) => {
     setCategory(cat);
@@ -195,12 +209,12 @@ export default function App() {
   }, []);
 
   const handleHistorySelect = useCallback((p: Prospect) => {
-    setProspect(p);
-    setStep('select');
-  }, []);
+    runAnalysis(p);
+  }, [runAnalysis]);
 
   const handleNew = useCallback(() => {
     setProspect(DEFAULT_PROSPECT);
+    setResearch(null);
     setStep('setup');
   }, []);
 
@@ -262,14 +276,25 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {analyzing ? (
+          <div className="max-w-md mx-auto py-20 text-center animate-fade-in">
+            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-taylor-50 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-taylor-700 animate-spin" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-1.5">Researching {prospect.company_name || 'your prospect'}</h2>
+            <p className="text-sm text-gray-500 mb-6">Reading their site and matching Taylor's track record — a few seconds.</p>
+            <div className="inline-flex items-center gap-2 text-sm text-taylor-700"><Sparkles className="w-4 h-4" /> Building tailored product ideas…</div>
+          </div>
+        ) : (
+        <>
         {step !== 'history' && <StepBar step={step} />}
 
         {step === 'history' && (
           <div key={refreshKey} className="animate-fade-in">
-            <div className="text-center mb-10">
+            <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Prospect Mockup Generator</h1>
               <p className="text-gray-500 max-w-xl mx-auto">
-                Upload a prospect's logo and brand colors to instantly generate personalized mockups of Taylor's print, packaging, signage, and fulfillment solutions.
+                Enter a prospect's website — AI researches their brand, recommends the Taylor products they'd actually buy, and shows real Taylor work plus on-brand mockups for your pitch.
               </p>
             </div>
             <RecentProspects key={refreshKey} onSelect={handleHistorySelect} onNew={handleNew} />
@@ -286,6 +311,8 @@ export default function App() {
         {step === 'select' && (
           <ProductSelector
             companyName={prospect.company_name}
+            research={research}
+            logo={prospect.logo_data_url}
             onSelect={handleCategorySelect}
           />
         )}
@@ -294,9 +321,12 @@ export default function App() {
           <MockupViewer
             prospect={prospect}
             category={category}
+            research={research}
             onBack={() => setStep('select')}
             onChangeCategory={() => setStep('select')}
           />
+        )}
+        </>
         )}
       </main>
 
