@@ -1,182 +1,373 @@
-import type { CSSProperties } from 'react';
-import type { BrandProps } from './types';
+import { useState, useCallback, useEffect } from 'react';
+import { ArrowLeft, Play, Pause, Download, Info, Sparkles } from 'lucide-react';
+import type { Prospect, ProductCategory } from '../types';
+import type { Research } from '../lib/analyzeCompany';
 
-function anim(delay: string, animated: boolean): CSSProperties {
-  return animated ? { animationDelay: delay, opacity: 0, animation: `fadeInUp 0.7s ease-out ${delay} forwards` } : {};
+type Setting = 'shelf' | 'storefront' | 'salesfloor' | 'mailbox' | 'desk' | 'warehouse';
+import { PostcardMockup, SelfMailerMockup, LetterMockup } from './mockups/DirectMail';
+import { LabelMockup, ShrinkSleeveMockup, CartonMockup } from './mockups/Packaging';
+import { InStoreMockup, TradeBannerMockup, WindowClingMockup } from './mockups/Signage';
+import { BrochureMockup, SellSheetMockup, CatalogMockup } from './mockups/CommercialPrint';
+import { NewLocationKitMockup, RebrandKitMockup, CampaignPackMockup } from './mockups/Fulfillment';
+import { StatementMockup, EmployeeCommsMockup, TaxDocMockup } from './mockups/CustomerComms';
+
+interface Props {
+  prospect: Prospect;
+  category: ProductCategory;
+  research?: Research | null;
+  onBack: () => void;
+  onChangeCategory: () => void;
 }
 
-export function LabelMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
-  return (
-    <div className="flex items-center justify-center mockup-shadow" style={{ transform: 'perspective(900px) rotateY(-8deg) rotateX(4deg)' }}>
-      <div
-        className="w-[200px] h-[300px] rounded-2xl overflow-hidden flex flex-col shadow-2xl relative"
-        style={{ background: `linear-gradient(175deg, ${primaryColor}, ${primaryColor}ee)` }}
-      >
-        <img
-          src="https://images.pexels.com/photos/1024960/pexels-photo-1024960.jpeg?auto=compress&cs=tinysrgb&w=300"
-          alt="product label background"
-          className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
-        />
-        <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 20% 20%, white, transparent 50%)` }} />
-        <div className="h-2 w-full" style={{ background: secondaryColor }} />
-        <div className="flex-1 p-5 flex flex-col items-center justify-between relative z-10">
-          <div className="text-center" style={anim('0.1s', animated)}>
-            {logoDataUrl ? (
-              <img src={logoDataUrl} alt={companyName} className="h-12 max-w-[150px] object-contain brightness-0 invert mx-auto mb-2" />
-            ) : (
-              <div className="text-white font-bold text-lg tracking-wide mb-2">{companyName}</div>
-            )}
-            <div className="w-full h-px opacity-20" style={{ background: 'white' }} />
-          </div>
-
-          <div className="text-center" style={anim('0.3s', animated)}>
-            <div className="text-white/70 text-[10px] uppercase tracking-widest mb-1">Premium Series</div>
-            <div className="text-white font-bold text-2xl leading-tight mb-1">Product<br />Label</div>
-            <div className="inline-block px-3 py-1 rounded-full text-[10px] font-semibold text-white" style={{ background: `${secondaryColor}88` }}>
-              {companyName.slice(0, 8)} Edition
-            </div>
-          </div>
-
-          <div className="w-full" style={anim('0.5s', animated)}>
-            <div className="flex justify-between items-end mb-2">
-              <div className="text-white/50 text-[8px] uppercase">Net Wt.</div>
-              <div className="text-white text-xs font-bold">16 oz / 454g</div>
-            </div>
-            <div className="w-full h-[32px] bg-white rounded-lg flex items-center justify-center gap-0.5 px-2">
-              {Array.from({ length: 24 }).map((_, i) => (
-                <div key={i} className="rounded-sm" style={{
-                  width: i % 3 === 0 ? '3px' : '1.5px',
-                  height: i % 5 === 0 ? '28px' : '20px',
-                  background: primaryColor,
-                  opacity: 0.9
-                }} />
-              ))}
-            </div>
-            <div className="text-center text-white/40 text-[8px] mt-1">TC-{companyName.toUpperCase().slice(0, 4)}-001</div>
-          </div>
-        </div>
-        <div className="h-2 w-full" style={{ background: secondaryColor }} />
-      </div>
-    </div>
-  );
+interface TemplateInfo {
+  id: string;
+  label: string;
+  description: string;
+  tip: string;
+  Component: React.ComponentType<import('./mockups/types').BrandProps>;
+  proof?: string;
+  setting?: Setting;
+  ai?: boolean;
 }
 
-export function ShrinkSleeveMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+const CATEGORY_TEMPLATES: Record<ProductCategory, TemplateInfo[]> = {
+  'direct-mail': [
+    {
+      id: 'postcard',
+      label: 'Postcard',
+      description: '6"×4" high-impact direct mail piece with personalization and QR code.',
+      tip: 'Best for: New customer acquisition, promo offers, event invites. Case study: BrandsMart USA raised direct mail ROI with Taylor\'s data-driven segmentation.',
+      Component: PostcardMockup,
+    },
+    {
+      id: 'self-mailer',
+      label: 'Self-Mailer',
+      description: 'Tri-fold self-mailer — no envelope needed. Designed to stop the scroll.',
+      tip: 'Best for: Multi-offer campaigns, product launches. Taylor\'s Marketing Advantage Program (MAP) delivers deep segmentation and analytics.',
+      Component: SelfMailerMockup,
+    },
+    {
+      id: 'letter',
+      label: 'Personalized Letter',
+      description: 'Professional 1:1 letter with branded letterhead and personalized body copy.',
+      tip: 'Best for: High-value B2B outreach, financial services. Taylor manages mailing lists and package tracking with Zero Defects commitment.',
+      Component: LetterMockup,
+    },
+  ],
+  'packaging-labels': [
+    {
+      id: 'label',
+      label: 'Product Label',
+      description: 'Pressure-sensitive label with barcode and brand-consistent design.',
+      tip: 'Best for: Retail, F&B, industrial. Case study: Toro saved $25K/yr switching to Taylor\'s Grafilm IML — reduced scrap rate and shorter cycle times.',
+      Component: LabelMockup,
+    },
+    {
+      id: 'shrink',
+      label: 'Shrink Sleeve',
+      description: '360-degree graphic sleeve for bottles and containers.',
+      tip: 'Best for: Beverages, CPG. Shrink sleeves eliminate the need for custom-printed containers — 360-degree marketing on any shape.',
+      Component: ShrinkSleeveMockup,
+    },
+    {
+      id: 'carton',
+      label: 'Folding Carton',
+      description: 'Branded paperboard carton for retail packaging.',
+      tip: 'Best for: Consumer goods, food. Case study: Alien Gear cut costs 61% switching from clamshells to Taylor flexible pouches — 84% less plastic.',
+      Component: CartonMockup,
+    },
+  ],
+  'signage': [
+    {
+      id: 'instore',
+      label: 'In-Store Sign',
+      description: 'Large-format in-store sign with brand photography and CTA.',
+      tip: 'Best for: Retail, franchise rollouts. Case study: Paris Baguette — Taylor & Bolster created 30\'x6\' local murals + AR experiences across 60+ cafes.',
+      Component: InStoreMockup,
+    },
+    {
+      id: 'banner',
+      label: 'Trade Show Banner',
+      description: 'Retractable trade show banner with brand hierarchy and messaging.',
+      tip: 'Best for: Events, conferences. Case study: UNIQLO pop-up — Bolster designed immersive booth, Taylor managed fabrication and installation.',
+      Component: TradeBannerMockup,
+    },
+    {
+      id: 'window',
+      label: 'Window Cling',
+      description: 'Branded window cling for storefront visibility and promotion.',
+      tip: 'Best for: Retail, new openings. Case study: TUMI — Taylor crafted holiday window displays, top 50 stores became nationwide rollout on time.',
+      Component: WindowClingMockup,
+    },
+  ],
+  'commercial-print': [
+    {
+      id: 'brochure',
+      label: 'Tri-Fold Brochure',
+      description: 'Three-panel marketing brochure with brand story and key benefits.',
+      tip: 'Best for: Sales enablement, trade shows. Case study: Rifle Paper Co. — Taylor has been their G7-certified print partner for nearly a decade.',
+      Component: BrochureMockup,
+    },
+    {
+      id: 'sellsheet',
+      label: 'Sell Sheet',
+      description: 'Single-page sell sheet highlighting key stats and value propositions.',
+      tip: 'Best for: Product launches, sales calls. Taylor offers offset & digital under one roof for any run size.',
+      Component: SellSheetMockup,
+    },
+    {
+      id: 'catalog',
+      label: 'Product Catalog',
+      description: 'Professionally printed product catalog for the full brand story.',
+      tip: 'Best for: CPG, B2B. Case study: WNBA Championship book — Taylor\'s nimble plan accelerated production to meet tight deadlines.',
+      Component: CatalogMockup,
+    },
+  ],
+  'fulfillment-kits': [
+    {
+      id: 'newlocation',
+      label: 'New Location Kit',
+      description: 'Complete grand opening kit assembled and shipped to every new location.',
+      tip: 'Best for: Franchise rollouts, new store opens. Case study: Taylor fulfilled 988,335 POS kits for a financial services giant in under 90 days.',
+      Component: NewLocationKitMockup,
+    },
+    {
+      id: 'rebrand',
+      label: 'Rebrand Rollout Kit',
+      description: 'Coordinated rebrand package with updated materials across all touchpoints.',
+      tip: 'Best for: Corporate rebrands, M&A. Taylor manages signage, stationery, direct mail, and POP displays as one coordinated rollout.',
+      Component: RebrandKitMockup,
+    },
+    {
+      id: 'campaign',
+      label: 'Campaign Launch Pack',
+      description: 'Omnichannel campaign kit with print, digital, and fulfillment components.',
+      tip: 'Best for: Seasonal campaigns, launches. 188 distinct kit versions created for one credit card issuer — Zero Defects commitment.',
+      Component: CampaignPackMockup,
+    },
+  ],
+  'customer-comms': [
+    {
+      id: 'statement',
+      label: 'Account Statement',
+      description: 'HIPAA/PCI-compliant branded account statement with secure delivery.',
+      tip: 'Best for: Financial services, insurance. Case study: Taylor streamlined statement printing for a global credit card company with lighter-weight paper.',
+      Component: StatementMockup,
+    },
+    {
+      id: 'employee',
+      label: 'Employee Comms',
+      description: 'Onboarding packet and benefits communications with brand identity.',
+      tip: 'Best for: HR departments, new hires. Case study: Venture HCM — Taylor\'s outsourced CCM slashed rising overhead for paychecks and tax forms.',
+      Component: EmployeeCommsMockup,
+    },
+    {
+      id: 'taxdoc',
+      label: 'Tax Document',
+      description: 'W-2 and 1099 forms with employer branding and compliance certifications.',
+      tip: 'Best for: Payroll, HR tech. HIPAA, PCI, SOC 2 compliant — secure print and digital delivery through a single omnichannel platform.',
+      Component: TaxDocMockup,
+    },
+  ],
+};
+
+const CATEGORY_LABELS: Record<ProductCategory, string> = {
+  'direct-mail': 'Direct Mail',
+  'packaging-labels': 'Packaging & Labels',
+  'signage': 'Signage & Graphics',
+  'commercial-print': 'Commercial Print',
+  'fulfillment-kits': 'Fulfillment & Kitting',
+  'customer-comms': 'Customer Communications',
+};
+
+// Where each category's product gets staged when generating a photoreal image.
+const CATEGORY_SETTING: Record<ProductCategory, Setting> = {
+  'direct-mail': 'mailbox',
+  'packaging-labels': 'shelf',
+  'signage': 'salesfloor',
+  'commercial-print': 'desk',
+  'fulfillment-kits': 'warehouse',
+  'customer-comms': 'desk',
+};
+
+export default function MockupViewer({ prospect, category, research, onBack, onChangeCategory }: Props) {
+  const baseTemplates = CATEGORY_TEMPLATES[category];
+  // If the AI recommended products for this category, build the template list
+  // from them (mapped onto the matching vector component); else use the defaults.
+  const aiProducts = (research?.products || []).filter((p) => p.category === category);
+  const templates: TemplateInfo[] = aiProducts.length
+    ? aiProducts.map((p) => {
+        const base = baseTemplates.find((b) => b.id === p.template) || baseTemplates[0];
+        return {
+          id: `${p.template}-${p.title}`,
+          label: p.title || base.label,
+          description: p.subtitle || base.description,
+          tip: p.why || base.tip,
+          proof: p.proof || '',
+          setting: (p.setting as Setting) || CATEGORY_SETTING[category],
+          ai: true,
+          Component: base.Component,
+        };
+      })
+    : baseTemplates;
+
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [animated, setAnimated] = useState(false);
+  const [animKey, setAnimKey] = useState(0);
+
+  // Keep the selection valid if the template list changes.
+  useEffect(() => { setSelectedIdx(0); }, [category, aiProducts.length]);
+
+  const brandProps = {
+    companyName: prospect.company_name,
+    logoDataUrl: prospect.logo_data_url,
+    primaryColor: prospect.primary_color,
+    secondaryColor: prospect.secondary_color,
+    animated,
+  };
+
+  const selected = templates[selectedIdx] || templates[0];
+  const { Component } = selected;
+
+  const toggleAnim = useCallback(() => {
+    setAnimated((a) => !a);
+    setAnimKey((k) => k + 1);
+  }, []);
+
+  const handleSelect = useCallback((idx: number) => {
+    setSelectedIdx(idx);
+    setAnimKey((k) => k + 1);
+  }, []);
+
   return (
-    <div className="flex items-center justify-center mockup-shadow" style={{ transform: 'perspective(900px) rotateY(-5deg) rotateX(3deg)' }}>
-      <div className="relative">
-        <div className="w-[160px] h-[340px] relative" style={{
-          background: `linear-gradient(to right, ${primaryColor}aa, ${primaryColor}, ${primaryColor}cc, ${primaryColor}, ${primaryColor}aa)`,
-          borderRadius: '50% / 8px',
-          boxShadow: `inset -20px 0 30px rgba(0,0,0,0.25), inset 20px 0 30px rgba(0,0,0,0.1)`,
-        }}>
-          <img
-            src="https://images.pexels.com/photos/1003914/pexels-photo-1003914.jpeg?auto=compress&cs=tinysrgb&w=300"
-            alt="bottle sleeve background"
-            className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
-            style={{ borderRadius: 'inherit' }}
-          />
-          <div className="absolute inset-0 opacity-15" style={{
-            background: `radial-gradient(ellipse at 30% 20%, white, transparent 50%)`,
-            borderRadius: 'inherit',
-          }} />
-
-          <div className="absolute inset-0 flex flex-col items-center justify-between py-6 px-4 z-10">
-            <div style={anim('0.1s', animated)}>
-              {logoDataUrl ? (
-                <img src={logoDataUrl} alt={companyName} className="h-10 max-w-[110px] object-contain brightness-0 invert" />
-              ) : (
-                <div className="text-white font-bold text-base text-center">{companyName}</div>
-              )}
-            </div>
-
-            <div className="text-center" style={anim('0.3s', animated)}>
-              <div className="text-white/60 text-[9px] uppercase tracking-widest mb-1">Premium</div>
-              <div className="text-white font-bold text-xl leading-tight text-center">
-                360°<br />Brand<br />Wrap
-              </div>
-              <div className="mt-2 w-full h-px opacity-30" style={{ background: secondaryColor }} />
-              <div className="mt-2 text-white/70 text-[10px] text-center">
-                12 fl oz | 355ml
-              </div>
-            </div>
-
-            <div style={anim('0.5s', animated)}>
-              <div
-                className="px-3 py-1.5 rounded-full text-white text-[10px] font-bold text-center"
-                style={{ background: secondaryColor }}
-              >
-                Recycled Material
-              </div>
-              <div className="text-white/40 text-[8px] text-center mt-2">
-                Taylor Corporation<br />Printed in USA
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[130px] h-4 rounded-full opacity-30"
-          style={{ background: primaryColor, filter: 'blur(8px)' }} />
-      </div>
-    </div>
-  );
-}
-
-export function CartonMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
-  return (
-    <div className="flex items-center justify-center mockup-shadow">
-      <div className="relative" style={{ transform: 'perspective(900px) rotateY(-18deg) rotateX(8deg)', transformStyle: 'preserve-3d' }}>
-        <div className="w-[200px] h-[240px] relative" style={{ background: primaryColor, borderRadius: '8px 8px 4px 4px' }}>
-          <img
-            src="https://images.pexels.com/photos/3641056/pexels-photo-3641056.jpeg?auto=compress&cs=tinysrgb&w=300"
-            alt="carton packaging background"
-            className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
-            style={{ borderRadius: 'inherit' }}
-          />
-          <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 80% 20%, white, transparent 50%)` }} />
-          <div className="absolute inset-0 flex flex-col items-center justify-between py-5 px-4 z-10">
-            <div style={anim('0.1s', animated)}>
-              {logoDataUrl ? (
-                <img src={logoDataUrl} alt={companyName} className="h-10 max-w-[160px] object-contain brightness-0 invert" />
-              ) : (
-                <div className="text-white font-bold text-lg">{companyName}</div>
-              )}
-            </div>
-            <div className="text-center" style={anim('0.3s', animated)}>
-              <div className="text-white/60 text-[10px] uppercase tracking-wider mb-1">Folding Carton</div>
-              <div className="text-white font-bold text-2xl mb-1">Product<br />Name</div>
-              <div className="inline-block px-3 py-1 rounded text-[10px] font-bold" style={{ background: secondaryColor, color: '#fff' }}>
-                NEW LOOK
-              </div>
-            </div>
-            <div className="text-center" style={anim('0.5s', animated)}>
-              <div className="text-white/50 text-[9px]">Made by {companyName}</div>
-              <div className="text-white/30 text-[8px]">Taylor Corporation | taylorcorp.com</div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="absolute top-0 bottom-0 -right-[60px] w-[65px] rounded-r"
-          style={{
-            background: `${primaryColor}bb`,
-            transform: 'rotateY(90deg)',
-            transformOrigin: 'left center',
-          }}
+    <div className="max-w-6xl mx-auto animate-fade-in">
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
         >
-          <div className="h-full flex items-center justify-center opacity-60">
-            <div className="text-white text-[9px] font-bold tracking-wider" style={{ writingMode: 'vertical-rl' }}>
-              {companyName.toUpperCase()}
-            </div>
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <div className="h-4 w-px bg-gray-200" />
+        <div className="text-sm text-gray-500">
+          <span className="font-semibold text-gray-700">{prospect.company_name}</span>
+          {' / '}
+          <button onClick={onChangeCategory} className="hover:text-taylor-600 transition-colors">
+            {CATEGORY_LABELS[category]}
+          </button>
+          {' / '}
+          <span className="text-gray-800 font-medium">{selected.label}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        <div className="space-y-3">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+            {selected.ai ? (<><Sparkles className="w-3.5 h-3.5 text-taylor-600" /> Recommended for {prospect.company_name}</>) : 'Templates'}
+          </div>
+          {templates.map((t, i) => (
+            <button
+              key={t.id}
+              onClick={() => handleSelect(i)}
+              className={`w-full text-left p-4 rounded-xl border transition-all ${
+                i === selectedIdx
+                  ? 'border-taylor-400 bg-taylor-50 shadow-sm'
+                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+              }`}
+            >
+              <div className={`font-semibold text-sm mb-0.5 flex items-center gap-1.5 ${i === selectedIdx ? 'text-taylor-700' : 'text-gray-800'}`}>
+                {t.ai && <Sparkles className="w-3 h-3 text-taylor-500 flex-shrink-0" />}
+                {t.label}
+              </div>
+              <div className="text-[11px] text-gray-500 leading-relaxed">{t.description}</div>
+            </button>
+          ))}
+
+          <div className="pt-2">
+            <button
+              onClick={onChangeCategory}
+              className="w-full py-2.5 rounded-xl border border-dashed border-gray-300 text-sm text-gray-500 hover:border-taylor-400 hover:text-taylor-600 transition-colors"
+            >
+              Browse other categories →
+            </button>
           </div>
         </div>
 
-        <div
-          className="absolute -top-[30px] left-0 right-0 h-[35px] rounded-t"
-          style={{ background: `${primaryColor}dd`, borderBottom: `2px solid ${secondaryColor}` }}
-        >
-          <div className="h-full flex items-center justify-center">
-            <div className="text-white/50 text-[9px]">Open here ▼</div>
+        <div className="flex flex-col gap-4">
+          <div className="bg-white rounded-2xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-bold text-gray-900">{selected.label}</h3>
+                <p className="text-sm text-gray-500 mt-0.5">{CATEGORY_LABELS[category]}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleAnim}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    animated
+                      ? 'bg-taylor-700 text-white shadow-md shadow-taylor-700/20'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {animated ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  {animated ? 'Pause Anim' : 'Animate'}
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" /> Save
+                </button>
+              </div>
+            </div>
+
+            <div
+              key={animKey}
+              className="relative flex items-center justify-center py-10 px-4 rounded-xl overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', minHeight: '380px' }}
+            >
+              <Component {...brandProps} />
+            </div>
+          </div>
+
+          {selected.ai ? (
+            <div className="bg-taylor-50 rounded-xl border border-taylor-100 p-4 flex items-start gap-3">
+              <Sparkles className="w-4 h-4 text-taylor-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-semibold text-taylor-900 mb-0.5">Why this fits {prospect.company_name}</div>
+                <div className="text-sm text-taylor-800">{selected.tip}</div>
+                {selected.proof && (
+                  <div className="mt-2 pt-2 border-t border-taylor-100 text-xs text-taylor-700"><span className="font-semibold">Taylor has done this before: </span>{selected.proof}</div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-amber-50 rounded-xl border border-amber-100 p-4 flex items-start gap-3">
+              <Info className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-semibold text-amber-800 mb-0.5">Sales Tip</div>
+                <div className="text-sm text-amber-700">{selected.tip}</div>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+              <div className="text-xl font-bold text-taylor-700">40+</div>
+              <div className="text-xs text-gray-500 mt-0.5">Production Sites</div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+              <div className="text-xl font-bold text-taylor-700">99.3%</div>
+              <div className="text-xs text-gray-500 mt-0.5">Order Accuracy</div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+              <div className="text-xl font-bold text-taylor-700">27M</div>
+              <div className="text-xs text-gray-500 mt-0.5">Kits Per Year</div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+              <div className="text-xl font-bold text-taylor-700">1 Day</div>
+              <div className="text-xs text-gray-500 mt-0.5">Ship to Most Markets</div>
+            </div>
           </div>
         </div>
       </div>
