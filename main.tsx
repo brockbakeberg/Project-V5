@@ -348,14 +348,6 @@ export default function MockupViewer({ prospect, category, research, onBack, onC
                 >
                   <Download className="w-3.5 h-3.5" /> Save
                 </button>
-                <button
-                  onClick={handleGenerate}
-                  disabled={genLoading}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-taylor-700 text-white hover:bg-taylor-800 shadow-md shadow-taylor-700/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {genLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                  {genLoading ? 'Generating…' : photo ? 'Regenerate' : 'AI Photo'}
-                </button>
               </div>
             </div>
 
