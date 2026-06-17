@@ -1,8 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, Play, Pause, Download, Info, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Download, Info, Sparkles, CheckCircle } from 'lucide-react';
 import type { Prospect, ProductCategory } from '../types';
 import type { Research } from '../lib/analyzeCompany';
-import { generateMockupImage, overlayLogo, type GenerateImageArgs } from '../lib/generateImage';
+import { PORTFOLIO } from '../lib/portfolio';
+
+type Setting = 'shelf' | 'storefront' | 'salesfloor' | 'mailbox' | 'desk' | 'warehouse';
 import { PostcardMockup, SelfMailerMockup, LetterMockup } from './mockups/DirectMail';
 import { LabelMockup, ShrinkSleeveMockup, CartonMockup } from './mockups/Packaging';
 import { InStoreMockup, TradeBannerMockup, WindowClingMockup } from './mockups/Signage';
@@ -25,7 +27,7 @@ interface TemplateInfo {
   tip: string;
   Component: React.ComponentType<import('./mockups/types').BrandProps>;
   proof?: string;
-  setting?: GenerateImageArgs['setting'];
+  setting?: Setting;
   ai?: boolean;
 }
 
@@ -180,7 +182,7 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
 };
 
 // Where each category's product gets staged when generating a photoreal image.
-const CATEGORY_SETTING: Record<ProductCategory, GenerateImageArgs['setting']> = {
+const CATEGORY_SETTING: Record<ProductCategory, Setting> = {
   'direct-mail': 'mailbox',
   'packaging-labels': 'shelf',
   'signage': 'salesfloor',
@@ -203,7 +205,7 @@ export default function MockupViewer({ prospect, category, research, onBack, onC
           description: p.subtitle || base.description,
           tip: p.why || base.tip,
           proof: p.proof || '',
-          setting: (p.setting as GenerateImageArgs['setting']) || CATEGORY_SETTING[category],
+          setting: (p.setting as Setting) || CATEGORY_SETTING[category],
           ai: true,
           Component: base.Component,
         };
@@ -237,37 +239,6 @@ export default function MockupViewer({ prospect, category, research, onBack, onC
     setSelectedIdx(idx);
     setAnimKey((k) => k + 1);
   }, []);
-
-  // ---- AI photoreal image generation ----------------------------------------
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [genLoading, setGenLoading] = useState(false);
-  const [genError, setGenError] = useState<string | null>(null);
-
-  // Clear any generated photo when the template or category changes.
-  useEffect(() => {
-    setPhoto(null);
-    setGenError(null);
-  }, [selectedIdx, category]);
-
-  const handleGenerate = useCallback(async () => {
-    setGenLoading(true);
-    setGenError(null);
-    try {
-      const scene = await generateMockupImage({
-        company: prospect.company_name,
-        product: selected.label,
-        setting: selected.setting || CATEGORY_SETTING[category],
-        primaryColor: prospect.primary_color,
-        secondaryColor: prospect.secondary_color,
-        brandNotes: research?.summary || prospect.notes || `${prospect.industry} brand`,
-      });
-      setPhoto(await overlayLogo(scene, prospect.logo_data_url));
-    } catch (e) {
-      setGenError(e instanceof Error ? e.message : 'Failed to generate image');
-    } finally {
-      setGenLoading(false);
-    }
-  }, [prospect, selected, category, research]);
 
   return (
     <div className="max-w-6xl mx-auto animate-fade-in">
@@ -356,38 +327,8 @@ export default function MockupViewer({ prospect, category, research, onBack, onC
               className="relative flex items-center justify-center py-10 px-4 rounded-xl overflow-hidden"
               style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', minHeight: '380px' }}
             >
-              {photo ? (
-                <div className="relative">
-                  <img
-                    src={photo}
-                    alt={`${selected.label} for ${prospect.company_name}`}
-                    className="max-w-full max-h-[420px] rounded-xl mockup-shadow"
-                  />
-                  <button
-                    onClick={() => setPhoto(null)}
-                    className="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-white/90 text-xs font-medium text-gray-600 hover:bg-white shadow"
-                  >
-                    Show vector
-                  </button>
-                </div>
-              ) : (
-                <Component {...brandProps} />
-              )}
-
-              {genLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 backdrop-blur-sm">
-                  <Loader2 className="w-8 h-8 text-taylor-700 animate-spin" />
-                  <div className="text-sm font-medium text-gray-600">Generating photoreal mockup…</div>
-                </div>
-              )}
+              <Component {...brandProps} />
             </div>
-
-            {genError && (
-              <div className="mt-3 flex items-start gap-2 text-sm text-red-600 bg-red-50 rounded-lg p-3">
-                <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <div>{genError}</div>
-              </div>
-            )}
           </div>
 
           {selected.ai ? (
@@ -429,6 +370,30 @@ export default function MockupViewer({ prospect, category, research, onBack, onC
               <div className="text-xs text-gray-500 mt-0.5">Ship to Most Markets</div>
             </div>
           </div>
+
+          {PORTFOLIO[category] && PORTFOLIO[category].length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <h4 className="font-bold text-gray-900">Real Taylor work in {CATEGORY_LABELS[category]}</h4>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">Actual projects Taylor has delivered — proof to show {prospect.company_name}.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {PORTFOLIO[category].map((item, i) => (
+                  <div key={i} className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+                    <div className="relative">
+                      <img src={item.src} alt={item.label} className="w-full h-40 object-cover" loading="lazy" />
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-semibold text-taylor-700 shadow">Real Taylor project</div>
+                    </div>
+                    <div className="p-3">
+                      <div className="text-sm font-semibold text-gray-800">{item.label}</div>
+                      <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.caption}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
