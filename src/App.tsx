@@ -5,7 +5,7 @@ import ProductSelector from './components/ProductSelector';
 import MockupViewer from './components/MockupViewer';
 import { supabase } from './lib/supabase';
 import { analyzeCompany, type Research } from './lib/analyzeCompany';
-import { CLIENT_LOGOS_BANNER } from './lib/portfolio';
+import { CLIENT_LOGOS_BANNER, TAYLOR_LOGO } from './lib/portfolio';
 import type { Prospect, ProductCategory, AppStep } from './types';
 
 const DEFAULT_PROSPECT: Prospect = {
@@ -239,7 +239,7 @@ export default function App() {
               onClick={() => { setRefreshKey(k => k + 1); setStep('history'); }}
               className="flex items-center gap-3 group"
             >
-              <span className="text-2xl font-extrabold tracking-tight text-taylor-700" style={{ letterSpacing: '-0.03em' }}>Taylor</span>
+              <img src={TAYLOR_LOGO} alt="Taylor" className="h-7 w-auto" />
               <span className="hidden sm:block h-5 w-px bg-gray-300" />
               <span className="hidden sm:block text-xs font-semibold uppercase tracking-wider text-gray-500">Prospect Mockup Tool</span>
             </button>
@@ -334,7 +334,7 @@ export default function App() {
       <footer className="mt-16 border-t border-gray-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-extrabold tracking-tight text-taylor-700" style={{ letterSpacing: '-0.03em' }}>Taylor</span>
+            <img src={TAYLOR_LOGO} alt="Taylor" className="h-5 w-auto" />
             <span className="text-sm text-gray-400">Internal Tool</span>
           </div>
           <div className="text-xs text-gray-400">
