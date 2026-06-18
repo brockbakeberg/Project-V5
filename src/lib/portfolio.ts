@@ -35,3 +35,13 @@ export const PORTFOLIO: Record<string, PortfolioItem[]> = {
     { src: `${BASE}/comms-3.jpg`, label: 'Secure Packs & Card Carriers', caption: 'Secure gift-card packaging and labels' },
   ],
 };
+
+// Matching Taylor.com solution page per category (verified live URLs).
+export const SOLUTION_LINKS: Record<string, string> = {
+  'signage': 'https://www.taylor.com/solutions/signs-and-graphics',
+  'packaging-labels': 'https://www.taylor.com/packaging-and-labeling',
+  'direct-mail': 'https://www.taylor.com/marketing-solutions/direct-mail-marketing',
+  'commercial-print': 'https://www.taylor.com/print-services/print-management-services',
+  'fulfillment-kits': 'https://www.taylor.com/print-services/print-management-services',
+  'customer-comms': 'https://www.taylor.com/marketing-solutions/omnichannel-communications',
+};
