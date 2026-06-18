@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, Play, Pause, Download, Info, Sparkles, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Download, Info, Sparkles, CheckCircle, ExternalLink } from 'lucide-react';
 import type { Prospect, ProductCategory } from '../types';
 import type { Research } from '../lib/analyzeCompany';
-import { PORTFOLIO } from '../lib/portfolio';
+import { PORTFOLIO, SOLUTION_LINKS } from '../lib/portfolio';
 
 type Setting = 'shelf' | 'storefront' | 'salesfloor' | 'mailbox' | 'desk' | 'warehouse';
 import { PostcardMockup, SelfMailerMockup, LetterMockup } from './mockups/DirectMail';
@@ -377,19 +377,26 @@ export default function MockupViewer({ prospect, category, research, onBack, onC
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 <h4 className="font-bold text-gray-900">Real Taylor work in {CATEGORY_LABELS[category]}</h4>
               </div>
-              <p className="text-xs text-gray-500 mb-4">Actual projects Taylor has delivered — proof to show {prospect.company_name}.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <p className="text-xs text-gray-500 mb-4">Actual projects Taylor has delivered — click any example to view this solution on Taylor.com.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {PORTFOLIO[category].map((item, i) => (
-                  <div key={i} className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+                  <a
+                    key={i}
+                    href={SOLUTION_LINKS[category] || 'https://www.taylor.com/'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group rounded-xl overflow-hidden border border-gray-200 bg-gray-50 hover:shadow-lg hover:border-taylor-300 transition-all"
+                  >
                     <div className="relative">
-                      <img src={item.src} alt={item.label} className="w-full h-40 object-cover" loading="lazy" />
-                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-semibold text-taylor-700 shadow">Real Taylor project</div>
+                      <img src={item.src} alt={item.label} className="w-full h-56 sm:h-64 object-cover group-hover:scale-[1.02] transition-transform duration-300" loading="lazy" />
+                      <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-white/90 text-[11px] font-semibold text-taylor-700 shadow">Real Taylor project</div>
                     </div>
-                    <div className="p-3">
-                      <div className="text-sm font-semibold text-gray-800">{item.label}</div>
-                      <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.caption}</div>
+                    <div className="p-4">
+                      <div className="text-base font-semibold text-gray-800">{item.label}</div>
+                      <div className="text-sm text-gray-500 mt-0.5 leading-relaxed">{item.caption}</div>
+                      <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-taylor-700">View on Taylor.com <ExternalLink className="w-3 h-3" /></div>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
