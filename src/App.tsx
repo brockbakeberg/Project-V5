@@ -5,6 +5,7 @@ import ProductSelector from './components/ProductSelector';
 import MockupViewer from './components/MockupViewer';
 import { supabase } from './lib/supabase';
 import { analyzeCompany, type Research } from './lib/analyzeCompany';
+import { CLIENT_LOGOS_BANNER } from './lib/portfolio';
 import type { Prospect, ProductCategory, AppStep } from './types';
 
 const DEFAULT_PROSPECT: Prospect = {
@@ -296,6 +297,10 @@ export default function App() {
               <p className="text-gray-500 max-w-xl mx-auto">
                 Enter a prospect's website — AI researches their brand, recommends the Taylor products they'd actually buy, and shows real Taylor work plus on-brand mockups for your pitch.
               </p>
+            </div>
+            <div className="max-w-3xl mx-auto mb-10 rounded-2xl border border-gray-200 bg-white p-5 text-center">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Trusted by the world's leading brands</div>
+              <img src={CLIENT_LOGOS_BANNER} alt="Brands that trust Taylor" className="w-full max-w-2xl mx-auto object-contain" />
             </div>
             <RecentProspects key={refreshKey} onSelect={handleHistorySelect} onNew={handleNew} />
           </div>
