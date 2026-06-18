@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Zap, Clock, ChevronRight, Plus, Building2, Trash2, Loader2, Sparkles } from 'lucide-react';
+import { Clock, ChevronRight, Plus, Building2, Trash2, Loader2, Sparkles } from 'lucide-react';
 import ProspectSetup from './components/ProspectSetup';
 import ProductSelector from './components/ProductSelector';
 import MockupViewer from './components/MockupViewer';
@@ -232,32 +232,28 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-taylor-950 border-b border-white/5 sticky top-0 z-40">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
               onClick={() => { setRefreshKey(k => k + 1); setStep('history'); }}
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-3 group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-taylor-400 to-taylor-600 flex items-center justify-center">
-                <Zap className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <div className="text-white font-bold text-sm leading-none">Taylor Corporation</div>
-                <div className="text-taylor-400 text-[10px] leading-none mt-0.5">Prospect Mockup Tool</div>
-              </div>
+              <span className="text-2xl font-extrabold tracking-tight text-taylor-700" style={{ letterSpacing: '-0.03em' }}>Taylor</span>
+              <span className="hidden sm:block h-5 w-px bg-gray-300" />
+              <span className="hidden sm:block text-xs font-semibold uppercase tracking-wider text-gray-500">Prospect Mockup Tool</span>
             </button>
 
             <div className="flex items-center gap-4">
               {step !== 'history' && (
                 <>
-                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5">
+                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100">
                     <div className="w-2 h-2 rounded-full" style={{ background: prospect.primary_color }} />
-                    <span className="text-white/70 text-xs truncate max-w-[120px]">{prospect.company_name || 'New Prospect'}</span>
+                    <span className="text-gray-600 text-xs truncate max-w-[120px]">{prospect.company_name || 'New Prospect'}</span>
                   </div>
                   <button
                     onClick={handleBack}
-                    className="text-white/50 hover:text-white text-sm transition-colors"
+                    className="text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors"
                   >
                     ← Back
                   </button>
@@ -266,7 +262,7 @@ export default function App() {
               {step === 'history' && (
                 <button
                   onClick={handleNew}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-taylor-700 text-white text-sm font-semibold hover:bg-taylor-800 transition-colors shadow-sm"
                 >
                   <Plus className="w-4 h-4" /> New Prospect
                 </button>
@@ -338,10 +334,8 @@ export default function App() {
       <footer className="mt-16 border-t border-gray-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-taylor-700 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
-            </div>
-            <span className="text-sm text-gray-500">Taylor Corporation Internal Tool</span>
+            <span className="text-lg font-extrabold tracking-tight text-taylor-700" style={{ letterSpacing: '-0.03em' }}>Taylor</span>
+            <span className="text-sm text-gray-400">Internal Tool</span>
           </div>
           <div className="text-xs text-gray-400">
             A Global Printing Company — Print | Marketing | Packaging | Fulfillment
