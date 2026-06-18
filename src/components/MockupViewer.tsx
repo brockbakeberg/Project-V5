@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, Play, Pause, Download, Info, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Download, Info, Sparkles } from 'lucide-react';
 import type { Prospect, ProductCategory } from '../types';
-import { generateMockupImage, overlayLogo, type GenerateImageArgs } from '../lib/generateImage';
+import type { Research } from '../lib/analyzeCompany';
+
+type Setting = 'shelf' | 'storefront' | 'salesfloor' | 'mailbox' | 'desk' | 'warehouse';
 import { PostcardMockup, SelfMailerMockup, LetterMockup } from './mockups/DirectMail';
 import { LabelMockup, ShrinkSleeveMockup, CartonMockup } from './mockups/Packaging';
 import { InStoreMockup, TradeBannerMockup, WindowClingMockup } from './mockups/Signage';
@@ -12,6 +14,7 @@ import { StatementMockup, EmployeeCommsMockup, TaxDocMockup } from './mockups/Cu
 interface Props {
   prospect: Prospect;
   category: ProductCategory;
+  research?: Research | null;
   onBack: () => void;
   onChangeCategory: () => void;
 }
@@ -22,6 +25,9 @@ interface TemplateInfo {
   description: string;
   tip: string;
   Component: React.ComponentType<import('./mockups/types').BrandProps>;
+  proof?: string;
+  setting?: Setting;
+  ai?: boolean;
 }
 
 const CATEGORY_TEMPLATES: Record<ProductCategory, TemplateInfo[]> = {
@@ -175,7 +181,7 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
 };
 
 // Where each category's product gets staged when generating a photoreal image.
-const CATEGORY_SETTING: Record<ProductCategory, GenerateImageArgs['setting']> = {
+const CATEGORY_SETTING: Record<ProductCategory, Setting> = {
   'direct-mail': 'mailbox',
   'packaging-labels': 'shelf',
   'signage': 'salesfloor',
@@ -184,11 +190,33 @@ const CATEGORY_SETTING: Record<ProductCategory, GenerateImageArgs['setting']> = 
   'customer-comms': 'desk',
 };
 
-export default function MockupViewer({ prospect, category, onBack, onChangeCategory }: Props) {
-  const templates = CATEGORY_TEMPLATES[category];
+export default function MockupViewer({ prospect, category, research, onBack, onChangeCategory }: Props) {
+  const baseTemplates = CATEGORY_TEMPLATES[category];
+  // If the AI recommended products for this category, build the template list
+  // from them (mapped onto the matching vector component); else use the defaults.
+  const aiProducts = (research?.products || []).filter((p) => p.category === category);
+  const templates: TemplateInfo[] = aiProducts.length
+    ? aiProducts.map((p) => {
+        const base = baseTemplates.find((b) => b.id === p.template) || baseTemplates[0];
+        return {
+          id: `${p.template}-${p.title}`,
+          label: p.title || base.label,
+          description: p.subtitle || base.description,
+          tip: p.why || base.tip,
+          proof: p.proof || '',
+          setting: (p.setting as Setting) || CATEGORY_SETTING[category],
+          ai: true,
+          Component: base.Component,
+        };
+      })
+    : baseTemplates;
+
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [animated, setAnimated] = useState(false);
   const [animKey, setAnimKey] = useState(0);
+
+  // Keep the selection valid if the template list changes.
+  useEffect(() => { setSelectedIdx(0); }, [category, aiProducts.length]);
 
   const brandProps = {
     companyName: prospect.company_name,
@@ -198,7 +226,7 @@ export default function MockupViewer({ prospect, category, onBack, onChangeCateg
     animated,
   };
 
-  const selected = templates[selectedIdx];
+  const selected = templates[selectedIdx] || templates[0];
   const { Component } = selected;
 
   const toggleAnim = useCallback(() => {
@@ -210,37 +238,6 @@ export default function MockupViewer({ prospect, category, onBack, onChangeCateg
     setSelectedIdx(idx);
     setAnimKey((k) => k + 1);
   }, []);
-
-  // ---- AI photoreal image generation ----------------------------------------
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [genLoading, setGenLoading] = useState(false);
-  const [genError, setGenError] = useState<string | null>(null);
-
-  // Clear any generated photo when the template or category changes.
-  useEffect(() => {
-    setPhoto(null);
-    setGenError(null);
-  }, [selectedIdx, category]);
-
-  const handleGenerate = useCallback(async () => {
-    setGenLoading(true);
-    setGenError(null);
-    try {
-      const scene = await generateMockupImage({
-        company: prospect.company_name,
-        product: selected.label,
-        setting: CATEGORY_SETTING[category],
-        primaryColor: prospect.primary_color,
-        secondaryColor: prospect.secondary_color,
-        brandNotes: prospect.notes || `${prospect.industry} brand`,
-      });
-      setPhoto(await overlayLogo(scene, prospect.logo_data_url));
-    } catch (e) {
-      setGenError(e instanceof Error ? e.message : 'Failed to generate image');
-    } finally {
-      setGenLoading(false);
-    }
-  }, [prospect, selected, category]);
 
   return (
     <div className="max-w-6xl mx-auto animate-fade-in">
@@ -265,7 +262,9 @@ export default function MockupViewer({ prospect, category, onBack, onChangeCateg
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         <div className="space-y-3">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Templates</div>
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+            {selected.ai ? (<><Sparkles className="w-3.5 h-3.5 text-taylor-600" /> Recommended for {prospect.company_name}</>) : 'Templates'}
+          </div>
           {templates.map((t, i) => (
             <button
               key={t.id}
@@ -276,7 +275,8 @@ export default function MockupViewer({ prospect, category, onBack, onChangeCateg
                   : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
               }`}
             >
-              <div className={`font-semibold text-sm mb-0.5 ${i === selectedIdx ? 'text-taylor-700' : 'text-gray-800'}`}>
+              <div className={`font-semibold text-sm mb-0.5 flex items-center gap-1.5 ${i === selectedIdx ? 'text-taylor-700' : 'text-gray-800'}`}>
+                {t.ai && <Sparkles className="w-3 h-3 text-taylor-500 flex-shrink-0" />}
                 {t.label}
               </div>
               <div className="text-[11px] text-gray-500 leading-relaxed">{t.description}</div>
@@ -318,14 +318,6 @@ export default function MockupViewer({ prospect, category, onBack, onChangeCateg
                 >
                   <Download className="w-3.5 h-3.5" /> Save
                 </button>
-                <button
-                  onClick={handleGenerate}
-                  disabled={genLoading}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-taylor-700 text-white hover:bg-taylor-800 shadow-md shadow-taylor-700/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {genLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                  {genLoading ? 'Generating…' : photo ? 'Regenerate' : 'AI Photo'}
-                </button>
               </div>
             </div>
 
@@ -334,47 +326,30 @@ export default function MockupViewer({ prospect, category, onBack, onChangeCateg
               className="relative flex items-center justify-center py-10 px-4 rounded-xl overflow-hidden"
               style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', minHeight: '380px' }}
             >
-              {photo ? (
-                <div className="relative">
-                  <img
-                    src={photo}
-                    alt={`${selected.label} for ${prospect.company_name}`}
-                    className="max-w-full max-h-[420px] rounded-xl mockup-shadow"
-                  />
-                  <button
-                    onClick={() => setPhoto(null)}
-                    className="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-white/90 text-xs font-medium text-gray-600 hover:bg-white shadow"
-                  >
-                    Show vector
-                  </button>
-                </div>
-              ) : (
-                <Component {...brandProps} />
-              )}
-
-              {genLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 backdrop-blur-sm">
-                  <Loader2 className="w-8 h-8 text-taylor-700 animate-spin" />
-                  <div className="text-sm font-medium text-gray-600">Generating photoreal mockup…</div>
-                </div>
-              )}
+              <Component {...brandProps} />
             </div>
+          </div>
 
-            {genError && (
-              <div className="mt-3 flex items-start gap-2 text-sm text-red-600 bg-red-50 rounded-lg p-3">
-                <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <div>{genError}</div>
+          {selected.ai ? (
+            <div className="bg-taylor-50 rounded-xl border border-taylor-100 p-4 flex items-start gap-3">
+              <Sparkles className="w-4 h-4 text-taylor-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-semibold text-taylor-900 mb-0.5">Why this fits {prospect.company_name}</div>
+                <div className="text-sm text-taylor-800">{selected.tip}</div>
+                {selected.proof && (
+                  <div className="mt-2 pt-2 border-t border-taylor-100 text-xs text-taylor-700"><span className="font-semibold">Taylor has done this before: </span>{selected.proof}</div>
+                )}
               </div>
-            )}
-          </div>
-
-          <div className="bg-amber-50 rounded-xl border border-amber-100 p-4 flex items-start gap-3">
-            <Info className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <div className="text-sm font-semibold text-amber-800 mb-0.5">Sales Tip</div>
-              <div className="text-sm text-amber-700">{selected.tip}</div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-amber-50 rounded-xl border border-amber-100 p-4 flex items-start gap-3">
+              <Info className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-semibold text-amber-800 mb-0.5">Sales Tip</div>
+                <div className="text-sm text-amber-700">{selected.tip}</div>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
