@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, Play, Pause, Download, Info, Sparkles } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Download, Info, Sparkles, CheckCircle } from 'lucide-react';
 import type { Prospect, ProductCategory } from '../types';
 import type { Research } from '../lib/analyzeCompany';
+import { PORTFOLIO } from '../lib/portfolio';
 
 type Setting = 'shelf' | 'storefront' | 'salesfloor' | 'mailbox' | 'desk' | 'warehouse';
 import { PostcardMockup, SelfMailerMockup, LetterMockup } from './mockups/DirectMail';
@@ -369,6 +370,30 @@ export default function MockupViewer({ prospect, category, research, onBack, onC
               <div className="text-xs text-gray-500 mt-0.5">Ship to Most Markets</div>
             </div>
           </div>
+
+          {PORTFOLIO[category] && PORTFOLIO[category].length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <h4 className="font-bold text-gray-900">Real Taylor work in {CATEGORY_LABELS[category]}</h4>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">Actual projects Taylor has delivered — proof to show {prospect.company_name}.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {PORTFOLIO[category].map((item, i) => (
+                  <div key={i} className="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+                    <div className="relative">
+                      <img src={item.src} alt={item.label} className="w-full h-40 object-cover" loading="lazy" />
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-semibold text-taylor-700 shadow">Real Taylor project</div>
+                    </div>
+                    <div className="p-3">
+                      <div className="text-sm font-semibold text-gray-800">{item.label}</div>
+                      <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.caption}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
