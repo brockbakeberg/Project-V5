@@ -38,10 +38,10 @@ export const PORTFOLIO: Record<string, PortfolioItem[]> = {
 
 // Matching Taylor.com solution page per category (verified live URLs).
 export const SOLUTION_LINKS: Record<string, string> = {
-  'signage': 'https://www.taylor.com/solutions/signs-and-graphics',
+  'signage': 'https://www.taylor.com/print-services/signs-and-graphics',
   'packaging-labels': 'https://www.taylor.com/packaging-and-labeling',
   'direct-mail': 'https://www.taylor.com/marketing-solutions/direct-mail-marketing',
-  'commercial-print': 'https://www.taylor.com/print-services/print-management-services',
-  'fulfillment-kits': 'https://www.taylor.com/print-services/print-management-services',
-  'customer-comms': 'https://www.taylor.com/marketing-solutions/omnichannel-communications',
+  'commercial-print': 'https://www.taylor.com/print-services/commercial-print',
+  'fulfillment-kits': 'https://www.taylor.com/fulfillment-warehousing',
+  'customer-comms': 'https://www.taylor.com/print-services/customer-communication-management',
 };
