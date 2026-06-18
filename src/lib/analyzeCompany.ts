@@ -48,4 +48,9 @@ export function localResearch(prospect: Prospect): Research {
     return { category: id, template: s.template, title: s.title(company), subtitle: s.subtitle, setting: s.setting, why: s.why(company), proof: s.proof };
   });
   const base = prospect.notes?.trim() ? prospect.notes.trim() : `${company} is a ${prospect.industry || 'company'} that can use Taylor across print, packaging, signage, and fulfillment.`;
-  return { summary: base.slice(0, 240),
+  return { summary: base.slice(0, 240), positioning: `${prospect.industry || 'Business'} • tailored Taylor recommendations`, categories, products, source: 'builtin' };
+}
+
+export async function analyzeCompany(prospect: Prospect): Promise<Research> {
+  return localResearch(prospect);
+}
