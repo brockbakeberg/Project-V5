@@ -12,11 +12,7 @@ export function LabelMockup({ companyName, logoDataUrl, primaryColor, secondaryC
         className="w-[200px] h-[300px] rounded-2xl overflow-hidden flex flex-col shadow-2xl relative"
         style={{ background: `linear-gradient(175deg, ${primaryColor}, ${primaryColor}ee)` }}
       >
-        <img
-          src="https://images.pexels.com/photos/1024960/pexels-photo-1024960.jpeg?auto=compress&cs=tinysrgb&w=300"
-          alt="product label background"
-          className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
-        />
+        <div className="absolute inset-0 w-full h-full opacity-10" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
         <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 20% 20%, white, transparent 50%)` }} />
         <div className="h-2 w-full" style={{ background: secondaryColor }} />
         <div className="flex-1 p-5 flex flex-col items-center justify-between relative z-10">
@@ -70,12 +66,7 @@ export function ShrinkSleeveMockup({ companyName, logoDataUrl, primaryColor, sec
           borderRadius: '50% / 8px',
           boxShadow: `inset -20px 0 30px rgba(0,0,0,0.25), inset 20px 0 30px rgba(0,0,0,0.1)`,
         }}>
-          <img
-            src="https://images.pexels.com/photos/1003914/pexels-photo-1003914.jpeg?auto=compress&cs=tinysrgb&w=300"
-            alt="bottle sleeve background"
-            className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
-            style={{ borderRadius: 'inherit' }}
-          />
+          <div className="absolute inset-0 w-full h-full opacity-10" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
           <div className="absolute inset-0 opacity-15" style={{
             background: `radial-gradient(ellipse at 30% 20%, white, transparent 50%)`,
             borderRadius: 'inherit',
@@ -127,12 +118,7 @@ export function CartonMockup({ companyName, logoDataUrl, primaryColor, secondary
     <div className="flex items-center justify-center mockup-shadow">
       <div className="relative" style={{ transform: 'perspective(900px) rotateY(-18deg) rotateX(8deg)', transformStyle: 'preserve-3d' }}>
         <div className="w-[200px] h-[240px] relative" style={{ background: primaryColor, borderRadius: '8px 8px 4px 4px' }}>
-          <img
-            src="https://images.pexels.com/photos/3641056/pexels-photo-3641056.jpeg?auto=compress&cs=tinysrgb&w=300"
-            alt="carton packaging background"
-            className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
-            style={{ borderRadius: 'inherit' }}
-          />
+          <div className="absolute inset-0 w-full h-full opacity-10" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
           <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 80% 20%, white, transparent 50%)` }} />
           <div className="absolute inset-0 flex flex-col items-center justify-between py-5 px-4 z-10">
             <div style={anim('0.1s', animated)}>
