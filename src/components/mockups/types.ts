@@ -3,5 +3,6 @@ export interface BrandProps {
   logoDataUrl: string;
   primaryColor: string;
   secondaryColor: string;
+  tagline?: string;
   animated: boolean;
 }
