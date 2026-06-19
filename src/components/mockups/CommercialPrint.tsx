@@ -5,7 +5,7 @@ function anim(delay: string, animated: boolean): CSSProperties {
   return animated ? { animationDelay: delay, opacity: 0, animation: `fadeInUp 0.7s ease-out ${delay} forwards` } : {};
 }
 
-export function BrochureMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function BrochureMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="mockup-shadow" style={{ transform: 'perspective(1200px) rotateY(-5deg) rotateX(2deg)' }}>
       <div className="flex rounded-xl overflow-hidden shadow-xl" style={{ width: '480px', height: '240px' }}>
@@ -22,7 +22,7 @@ export function BrochureMockup({ companyName, logoDataUrl, primaryColor, seconda
             </div>
             <div className="text-center" style={anim('0.4s', animated)}>
               <div className="text-white font-bold text-xl leading-tight mb-2">
-                Your Brand.<br />Our Print.
+                {companyName}
               </div>
               <div className="text-white/70 text-[10px]">Tri-Fold Brochure</div>
             </div>
@@ -71,7 +71,7 @@ export function BrochureMockup({ companyName, logoDataUrl, primaryColor, seconda
   );
 }
 
-export function SellSheetMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function SellSheetMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="mockup-shadow" style={{ transform: 'perspective(1000px) rotateY(-4deg) rotateX(2deg)' }}>
       <div className="w-[320px] bg-white rounded-xl overflow-hidden shadow-xl">
@@ -86,7 +86,7 @@ export function SellSheetMockup({ companyName, logoDataUrl, primaryColor, second
             )}
           </div>
           <div className="relative z-10" style={anim('0.3s', animated)}>
-            <div className="text-white font-bold text-xl">The Complete<br />Brand Solution</div>
+            <div className="text-white font-bold text-xl">{companyName}</div>
           </div>
         </div>
 
@@ -132,7 +132,7 @@ export function SellSheetMockup({ companyName, logoDataUrl, primaryColor, second
   );
 }
 
-export function CatalogMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function CatalogMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="flex items-start mockup-shadow" style={{ transform: 'perspective(1000px) rotateY(-10deg) rotateX(4deg)', transformStyle: 'preserve-3d' }}>
       <div className="relative">
