@@ -1,9 +1,18 @@
-import { Mail, Package, Image, BookOpen, Box, FileText, ArrowRight } from 'lucide-react';
+import { Mail, Package, Image, BookOpen, Box, FileText, ArrowRight, Sparkles } from 'lucide-react';
 import type { ProductCategory } from '../types';
+import type { Research } from '../lib/analyzeCompany';
 
 interface Props {
   onSelect: (cat: ProductCategory) => void;
   companyName: string;
+  research?: Research | null;
+  logo?: string;
+}
+
+function fitMeta(fit: string) {
+  if (fit === 'high') return { label: 'Strong fit', cls: 'bg-green-100 text-green-700', order: 0 };
+  if (fit === 'medium') return { label: 'Possible fit', cls: 'bg-amber-100 text-amber-700', order: 1 };
+  return { label: 'Not recommended', cls: 'bg-gray-200 text-gray-500', order: 2 };
 }
 
 const TAYLOR_IMG = {
@@ -88,10 +97,16 @@ const CATEGORIES = [
   },
 ];
 
-export default function ProductSelector({ onSelect, companyName }: Props) {
+export default function ProductSelector({ onSelect, companyName, research, logo }: Props) {
+  const catById = (id: string) => research?.categories?.find((c) => c.id === id);
+  const cards = CATEGORIES.map((cat) => ({ cat, fit: catById(cat.id)?.fit || (research ? 'low' : 'medium'), reason: catById(cat.id)?.reason }));
+  if (research) cards.sort((a, b) => fitMeta(a.fit).order - fitMeta(b.fit).order);
+  const labelById: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
+  const mostLikely = (research?.categories || []).filter((c) => c.fit === 'high').map((c) => labelById[c.id]).filter(Boolean);
+
   return (
     <div className="max-w-5xl mx-auto animate-fade-in-up">
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose a Product Category</h2>
         <p className="text-gray-500">
           Select which Taylor solution to mockup with{' '}
@@ -99,19 +114,68 @@ export default function ProductSelector({ onSelect, companyName }: Props) {
         </p>
       </div>
 
+      {research && (
+        <div className="mb-6 rounded-2xl border border-taylor-100 bg-taylor-50/50 p-5">
+          <div className="flex items-start gap-4">
+            {logo && (
+              <div className="w-14 h-14 rounded-xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <img src={logo} alt={`${companyName} logo`} className="max-w-full max-h-full object-contain p-1.5" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                <Sparkles className="w-4 h-4 text-taylor-700" />
+                <span className="text-sm font-semibold text-taylor-900">{companyName} — prospect brief</span>
+              </div>
+              {research.description
+                ? <p className="text-sm text-gray-700 leading-relaxed">{research.description}</p>
+                : <p className="text-sm text-gray-700">{research.summary}</p>}
+
+              {research.triggers && research.triggers.length > 0 && (
+                <div className="mt-3">
+                  <div className="text-xs font-semibold text-gray-700 mb-1">Likely triggers &amp; events to listen for</div>
+                  <ul className="space-y-1">
+                    {research.triggers.map((t, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-taylor-600 flex-shrink-0" />
+                        <span>{t}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {mostLikely.length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs font-semibold text-gray-700">Most likely to buy:</span>
+                  {mostLikely.map((m) => (
+                    <span key={m} className="px-2 py-0.5 rounded-full bg-taylor-100 text-taylor-800 text-[11px] font-medium">{m}</span>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-[11px] text-gray-400 mt-3">Ranked by fit for {companyName}. "Not recommended" means they're unlikely to buy it — you can still open it. This brief is generated from {companyName}'s industry profile, not live news.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {CATEGORIES.map((cat, i) => (
+        {cards.map(({ cat, fit, reason }, i) => {
+          const meta = fitMeta(fit);
+          const dim = research && fit === 'low';
+          return (
           <button
             key={cat.id}
             onClick={() => onSelect(cat.id)}
-            className="group text-left bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all duration-200 animate-fade-in-up"
+            className={`group text-left bg-white rounded-2xl border overflow-hidden hover:shadow-lg transition-all duration-200 animate-fade-in-up ${dim ? 'border-gray-200 opacity-60 hover:opacity-100' : 'border-gray-200 hover:border-gray-300'}`}
             style={{ animationDelay: `${i * 60}ms` }}
           >
             <div className="relative h-32 overflow-hidden">
               <img
                 src={cat.image}
                 alt={cat.label}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${dim ? 'grayscale' : ''}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               <div
@@ -120,6 +184,7 @@ export default function ProductSelector({ onSelect, companyName }: Props) {
               >
                 {cat.icon}
               </div>
+              {research && <div className={`absolute bottom-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-semibold ${meta.cls}`}>{meta.label}</div>}
               <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-semibold" style={{ color: cat.color }}>
                 {cat.stat}
               </div>
@@ -129,7 +194,11 @@ export default function ProductSelector({ onSelect, companyName }: Props) {
               <h3 className="font-bold text-gray-900 mb-1.5 group-hover:text-taylor-700 transition-colors">
                 {cat.label}
               </h3>
-              <p className="text-sm text-gray-500 leading-relaxed mb-4">{cat.description}</p>
+              {research && reason ? (
+                <p className="text-sm text-gray-600 leading-relaxed mb-4"><span className="font-medium text-gray-700">For {companyName}: </span>{reason}</p>
+              ) : (
+                <p className="text-sm text-gray-500 leading-relaxed mb-4">{cat.description}</p>
+              )}
               <div className="flex flex-wrap gap-1.5 mb-4">
                 {cat.templates.map((t) => (
                   <span key={t} className="px-2.5 py-1 rounded-md text-xs font-medium bg-gray-50 text-gray-600">
@@ -143,7 +212,8 @@ export default function ProductSelector({ onSelect, companyName }: Props) {
               </div>
             </div>
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
