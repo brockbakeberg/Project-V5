@@ -41,6 +41,49 @@ interface ResolvedLogo extends LogoCandidate {
   failed: boolean;
 }
 
+// Pull the dominant brand colors straight out of the logo image (runs in-browser).
+function extractBrandColors(dataUrl: string): Promise<{ primary: string; secondary: string } | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const N = 64;
+        const canvas = document.createElement('canvas');
+        canvas.width = N; canvas.height = N;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(null); return; }
+        ctx.drawImage(img, 0, 0, N, N);
+        const { data } = ctx.getImageData(0, 0, N, N);
+        const buckets: Record<string, { count: number; r: number; g: number; b: number; sat: number }> = {};
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+          if (a < 128) continue;
+          const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+          if (mx > 242 && mn > 242) continue; // near-white background
+          const sat = mx === 0 ? 0 : (mx - mn) / mx;
+          const key = `${r >> 5}-${g >> 5}-${b >> 5}`;
+          const bkt = buckets[key] || (buckets[key] = { count: 0, r: 0, g: 0, b: 0, sat: 0 });
+          bkt.count++; bkt.r += r; bkt.g += g; bkt.b += b; bkt.sat = sat;
+        }
+        const arr = Object.values(buckets).map((b) => ({
+          r: Math.round(b.r / b.count), g: Math.round(b.g / b.count), b: Math.round(b.b / b.count),
+          count: b.count, sat: b.sat,
+        }));
+        if (!arr.length) { resolve(null); return; }
+        // Favor vivid, frequent colors as the primary brand color.
+        arr.sort((x, y) => (y.count * (0.4 + y.sat)) - (x.count * (0.4 + x.sat)));
+        const toHex = (c: { r: number; g: number; b: number }) =>
+          '#' + [c.r, c.g, c.b].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('');
+        const primary = arr[0];
+        const different = arr.find((c) => Math.abs(c.r - primary.r) + Math.abs(c.g - primary.g) + Math.abs(c.b - primary.b) > 90);
+        resolve({ primary: toHex(primary), secondary: toHex(different || arr[1] || primary) });
+      } catch { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
+
 export default function ProspectSetup({ initial, onComplete }: Props) {
   const [form, setForm] = useState<Prospect>(initial);
   const [dragOver, setDragOver] = useState(false);
@@ -57,6 +100,13 @@ export default function ProspectSetup({ initial, onComplete }: Props) {
     setForm((f) => ({ ...f, [k]: v }));
   }, []);
 
+  // Auto-fill brand colors from a chosen logo.
+  const applyLogoColors = useCallback((dataUrl: string) => {
+    extractBrandColors(dataUrl).then((c) => {
+      if (c) { set('primary_color', c.primary); set('secondary_color', c.secondary); }
+    });
+  }, [set]);
+
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return;
     const reader = new FileReader();
@@ -66,9 +116,10 @@ export default function ProspectSetup({ initial, onComplete }: Props) {
       setLogoChosen(true);
       setLogoCandidates([]);
       setSelectedCandidateIdx(null);
+      applyLogoColors(dataUrl);
     };
     reader.readAsDataURL(file);
-  }, [set]);
+  }, [set, applyLogoColors]);
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -136,8 +187,9 @@ export default function ProspectSetup({ initial, onComplete }: Props) {
       set('logo_data_url', dataUrl);
       setLogoChosen(true);
       setSelectedCandidateIdx(firstSuccessIdx);
+      applyLogoColors(dataUrl);
     }
-  }, [fetchLogoAsDataUrl, set]);
+  }, [fetchLogoAsDataUrl, set, applyLogoColors]);
 
   const doScrape = useCallback(async (url: string) => {
     if (!url.trim()) return;
@@ -207,7 +259,8 @@ export default function ProspectSetup({ initial, onComplete }: Props) {
     setSelectedCandidateIdx(idx);
     set('logo_data_url', candidate.dataUrl);
     setLogoChosen(true);
-  }, [logoCandidates, set]);
+    applyLogoColors(candidate.dataUrl);
+  }, [logoCandidates, set, applyLogoColors]);
 
   const handleRemoveLogo = useCallback(() => {
     set('logo_data_url', '');
