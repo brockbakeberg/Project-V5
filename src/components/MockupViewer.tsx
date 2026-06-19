@@ -219,11 +219,26 @@ export default function MockupViewer({ prospect, category, research, onBack, onC
   // Keep the selection valid if the template list changes.
   useEffect(() => { setSelectedIdx(0); }, [category, aiProducts.length]);
 
+  // Clean up the entered name for display (e.g. "target" -> "Target").
+  const cleanName = (prospect.company_name || '')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase()) || 'Your Company';
+  const industryTagline = (() => {
+    const i = (prospect.industry || '').toLowerCase();
+    if (/food|beverage|cpg|consumer|grocery/.test(i)) return 'Quality on every shelf';
+    if (/financ|bank|insur|fintech|credit union/.test(i)) return 'Banking made personal';
+    if (/health|medical|pharma|hospital|clinic|dental/.test(i)) return 'Care you can count on';
+    if (/tech|software|saas|app|platform/.test(i)) return 'Innovation, delivered';
+    if (/restaurant|hospitality|hotel|cafe|coffee/.test(i)) return 'Made fresh, every day';
+    return 'Your brand, everywhere';
+  })();
+
   const brandProps = {
-    companyName: prospect.company_name,
+    companyName: cleanName,
     logoDataUrl: prospect.logo_data_url,
     primaryColor: prospect.primary_color,
     secondaryColor: prospect.secondary_color,
+    tagline: industryTagline,
     animated,
   };
 
