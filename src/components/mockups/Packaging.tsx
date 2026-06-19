@@ -5,7 +5,7 @@ function anim(delay: string, animated: boolean): CSSProperties {
   return animated ? { animationDelay: delay, opacity: 0, animation: `fadeInUp 0.7s ease-out ${delay} forwards` } : {};
 }
 
-export function LabelMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function LabelMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="flex items-center justify-center mockup-shadow" style={{ transform: 'perspective(900px) rotateY(-8deg) rotateX(4deg)' }}>
       <div
@@ -26,10 +26,10 @@ export function LabelMockup({ companyName, logoDataUrl, primaryColor, secondaryC
           </div>
 
           <div className="text-center" style={anim('0.3s', animated)}>
-            <div className="text-white/70 text-[10px] uppercase tracking-widest mb-1">Premium Series</div>
-            <div className="text-white font-bold text-2xl leading-tight mb-1">Product<br />Label</div>
+            <div className="text-white/70 text-[10px] uppercase tracking-widest mb-1">Product Label</div>
+            <div className="text-white font-bold text-2xl leading-tight mb-1">{companyName}</div>
             <div className="inline-block px-3 py-1 rounded-full text-[10px] font-semibold text-white" style={{ background: `${secondaryColor}88` }}>
-              {companyName.slice(0, 8)} Edition
+              {tagline || 'Premium Series'}
             </div>
           </div>
 
@@ -57,7 +57,7 @@ export function LabelMockup({ companyName, logoDataUrl, primaryColor, secondaryC
   );
 }
 
-export function ShrinkSleeveMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function ShrinkSleeveMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="flex items-center justify-center mockup-shadow" style={{ transform: 'perspective(900px) rotateY(-5deg) rotateX(3deg)' }}>
       <div className="relative">
@@ -82,13 +82,13 @@ export function ShrinkSleeveMockup({ companyName, logoDataUrl, primaryColor, sec
             </div>
 
             <div className="text-center" style={anim('0.3s', animated)}>
-              <div className="text-white/60 text-[9px] uppercase tracking-widest mb-1">Premium</div>
+              <div className="text-white/60 text-[9px] uppercase tracking-widest mb-1">{tagline || 'Premium'}</div>
               <div className="text-white font-bold text-xl leading-tight text-center">
-                360°<br />Brand<br />Wrap
+                {companyName}
               </div>
               <div className="mt-2 w-full h-px opacity-30" style={{ background: secondaryColor }} />
               <div className="mt-2 text-white/70 text-[10px] text-center">
-                12 fl oz | 355ml
+                360° brand wrap
               </div>
             </div>
 
@@ -113,7 +113,7 @@ export function ShrinkSleeveMockup({ companyName, logoDataUrl, primaryColor, sec
   );
 }
 
-export function CartonMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function CartonMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="flex items-center justify-center mockup-shadow">
       <div className="relative" style={{ transform: 'perspective(900px) rotateY(-18deg) rotateX(8deg)', transformStyle: 'preserve-3d' }}>
@@ -130,7 +130,7 @@ export function CartonMockup({ companyName, logoDataUrl, primaryColor, secondary
             </div>
             <div className="text-center" style={anim('0.3s', animated)}>
               <div className="text-white/60 text-[10px] uppercase tracking-wider mb-1">Folding Carton</div>
-              <div className="text-white font-bold text-2xl mb-1">Product<br />Name</div>
+              <div className="text-white font-bold text-2xl mb-1">{companyName}</div>
               <div className="inline-block px-3 py-1 rounded text-[10px] font-bold" style={{ background: secondaryColor, color: '#fff' }}>
                 NEW LOOK
               </div>
