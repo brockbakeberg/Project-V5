@@ -17,11 +17,7 @@ export function PostcardMockup({ companyName, logoDataUrl, primaryColor, seconda
         className="w-[420px] h-[270px] rounded-xl overflow-hidden relative"
         style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)` }}
       >
-        <img
-          src="https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=400"
-          alt="direct mail background"
-          className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay"
-        />
+        <div className="absolute inset-0 w-full h-full opacity-20" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
         <div className="absolute inset-0 opacity-20"
           style={{ background: `radial-gradient(circle at 70% 30%, ${secondaryColor}, transparent 55%)` }} />
 
@@ -124,11 +120,7 @@ export function SelfMailerMockup({ companyName, logoDataUrl, primaryColor, secon
 
         <div className="w-[170px] h-full p-5 flex flex-col justify-between relative overflow-hidden" style={{ background: primaryColor }}>
           <div className="absolute inset-0">
-            <img
-              src="https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=300"
-              alt="mail background"
-              className="w-full h-full object-cover opacity-15 mix-blend-overlay"
-            />
+            <div className="w-full h-full opacity-15" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
           </div>
           <div className="absolute inset-0 opacity-20" style={{ background: `radial-gradient(circle at 30% 70%, ${secondaryColor}, transparent 60%)` }} />
           <div className="relative z-10" style={anim('0.2s', animated)}>
