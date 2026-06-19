@@ -88,11 +88,7 @@ export function EmployeeCommsMockup({ companyName, logoDataUrl, primaryColor, se
     <div className="mockup-shadow" style={{ transform: 'perspective(1000px) rotateY(-4deg) rotateX(2deg)' }}>
       <div className="w-[340px] bg-white rounded-xl overflow-hidden shadow-xl">
         <div className="p-5 flex flex-col gap-4 relative" style={{ background: `${primaryColor}` }}>
-          <img
-            src="https://images.pexels.com/photos/1181533/pexels-photo-1181533.jpeg?auto=compress&cs=tinysrgb&w=300"
-            alt="employee comms background"
-            className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
-          />
+          <div className="absolute inset-0 w-full h-full opacity-10" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
           <div className="flex items-center justify-between relative z-10" style={anim('0.1s', animated)}>
             <div>
               {logoDataUrl ? (
