@@ -12,11 +12,7 @@ export function InStoreMockup({ companyName, logoDataUrl, primaryColor, secondar
         <div className="h-full flex flex-col">
           <div className="relative overflow-hidden" style={{ height: '200px', background: `linear-gradient(160deg, ${primaryColor}, ${primaryColor}cc)` }}>
             <div className="absolute inset-0 opacity-15" style={{ background: `radial-gradient(circle at 80% 20%, ${secondaryColor}, transparent 55%)` }} />
-            <img
-              src="https://images.pexels.com/photos/1005638/pexels-photo-1005638.jpeg?auto=compress&cs=tinysrgb&w=400"
-              alt="store"
-              className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay"
-            />
+            <div className="absolute inset-0 w-full h-full opacity-15" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
             <div className="relative z-10 h-full flex flex-col items-center justify-center p-6 text-center">
               <div style={anim('0.1s', animated)}>
                 {logoDataUrl ? (
@@ -80,11 +76,7 @@ export function TradeBannerMockup({ companyName, logoDataUrl, primaryColor, seco
               className="w-full rounded-xl overflow-hidden"
               style={{ height: '140px', background: `${secondaryColor}33` }}
             >
-              <img
-                src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=300"
-                alt="trade show"
-                className="w-full h-full object-cover opacity-50 mix-blend-luminosity"
-              />
+              <div className="w-full h-full opacity-50" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
             </div>
 
             <div className="text-center space-y-2 w-full" style={anim('0.4s', animated)}>
@@ -121,11 +113,7 @@ export function WindowClingMockup({ companyName, logoDataUrl, primaryColor, seco
         className="w-[340px] h-[240px] rounded-xl overflow-hidden relative"
         style={{ background: 'linear-gradient(135deg, #e8f0fe, #c7d7f7)' }}
       >
-        <img
-          src="https://images.pexels.com/photos/3184639/pexels-photo-3184639.jpeg?auto=compress&cs=tinysrgb&w=400"
-          alt="window"
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
-        />
+        <div className="absolute inset-0 w-full h-full opacity-20" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
 
         <div
           className="absolute inset-6 rounded-xl border-2 border-dashed flex flex-col items-center justify-between p-4"
