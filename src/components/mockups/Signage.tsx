@@ -5,7 +5,7 @@ function anim(delay: string, animated: boolean): CSSProperties {
   return animated ? { animationDelay: delay, opacity: 0, animation: `fadeInUp 0.7s ease-out ${delay} forwards` } : {};
 }
 
-export function InStoreMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function InStoreMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="mockup-shadow" style={{ transform: 'perspective(1000px) rotateY(-5deg) rotateX(2deg)' }}>
       <div className="w-[380px] rounded-xl overflow-hidden shadow-2xl" style={{ background: primaryColor }}>
@@ -49,7 +49,7 @@ export function InStoreMockup({ companyName, logoDataUrl, primaryColor, secondar
   );
 }
 
-export function TradeBannerMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function TradeBannerMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="flex items-start justify-center mockup-shadow" style={{ transform: 'perspective(900px) rotateY(-4deg)' }}>
       <div className="relative">
@@ -68,7 +68,7 @@ export function TradeBannerMockup({ companyName, logoDataUrl, primaryColor, seco
             <div className="text-center" style={anim('0.25s', animated)}>
               <div className="text-white/70 text-[10px] uppercase tracking-widest mb-1">Introducing</div>
               <div className="text-white font-bold text-2xl leading-tight">
-                Your Brand.<br />Amplified.
+                {companyName}
               </div>
             </div>
 
@@ -106,7 +106,7 @@ export function TradeBannerMockup({ companyName, logoDataUrl, primaryColor, seco
   );
 }
 
-export function WindowClingMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, animated }: BrandProps) {
+export function WindowClingMockup({ companyName, logoDataUrl, primaryColor, secondaryColor, tagline, animated }: BrandProps) {
   return (
     <div className="mockup-shadow" style={{ transform: 'perspective(1000px) rotateY(-6deg) rotateX(3deg)' }}>
       <div
