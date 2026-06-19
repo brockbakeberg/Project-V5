@@ -10,11 +10,7 @@ export function BrochureMockup({ companyName, logoDataUrl, primaryColor, seconda
     <div className="mockup-shadow" style={{ transform: 'perspective(1200px) rotateY(-5deg) rotateX(2deg)' }}>
       <div className="flex rounded-xl overflow-hidden shadow-xl" style={{ width: '480px', height: '240px' }}>
         <div className="w-[160px] flex flex-col relative overflow-hidden" style={{ background: primaryColor }}>
-          <img
-            src="https://images.pexels.com/photos/326333/pexels-photo-326333.jpeg?auto=compress&cs=tinysrgb&w=300"
-            alt="brochure background"
-            className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay"
-          />
+          <div className="absolute inset-0 w-full h-full opacity-15" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
           <div className="absolute inset-0 opacity-15" style={{ background: `radial-gradient(circle at 30% 70%, ${secondaryColor}, transparent 60%)` }} />
           <div className="flex-1 flex flex-col items-center justify-between p-4 relative z-10">
             <div style={anim('0.2s', animated)}>
@@ -80,11 +76,7 @@ export function SellSheetMockup({ companyName, logoDataUrl, primaryColor, second
     <div className="mockup-shadow" style={{ transform: 'perspective(1000px) rotateY(-4deg) rotateX(2deg)' }}>
       <div className="w-[320px] bg-white rounded-xl overflow-hidden shadow-xl">
         <div className="h-[130px] relative overflow-hidden flex flex-col justify-between p-5" style={{ background: primaryColor }}>
-          <img
-            src="https://images.pexels.com/photos/7217/partnership-1149595.jpg?auto=compress&cs=tinysrgb&w=400"
-            alt="sell sheet background"
-            className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay"
-          />
+          <div className="absolute inset-0 w-full h-full opacity-15" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
           <div className="absolute inset-0 opacity-20" style={{ background: `radial-gradient(circle at 70% 30%, ${secondaryColor}, transparent 50%)` }} />
           <div className="relative z-10" style={anim('0.1s', animated)}>
             {logoDataUrl ? (
@@ -145,11 +137,7 @@ export function CatalogMockup({ companyName, logoDataUrl, primaryColor, secondar
     <div className="flex items-start mockup-shadow" style={{ transform: 'perspective(1000px) rotateY(-10deg) rotateX(4deg)', transformStyle: 'preserve-3d' }}>
       <div className="relative">
         <div className="w-[220px] h-[290px] rounded-r-xl overflow-hidden shadow-2xl" style={{ background: primaryColor }}>
-          <img
-            src="https://images.pexels.com/photos/4050315/pexels-photo-4050315.jpeg?auto=compress&cs=tinysrgb&w=300"
-            alt="catalog background"
-            className="absolute inset-0 w-full h-full object-cover opacity-15 mix-blend-overlay"
-          />
+          <div className="absolute inset-0 w-full h-full opacity-15" style={{ background: `linear-gradient(135deg, ${primaryColor}14, ${secondaryColor}10)` }} />
           <div className="absolute inset-0 opacity-15" style={{ background: `radial-gradient(circle at 80% 20%, ${secondaryColor}, transparent 50%)` }} />
           <div className="h-full flex flex-col items-center justify-between p-6 relative z-10">
             <div style={anim('0.1s', animated)}>
